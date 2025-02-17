@@ -31,12 +31,15 @@
   <body>
     <h1>EXE Extractor Web Interface</h1>
 
-    <form id="upload-form">
+    <div id="upload-section">
       <label>Select a single EXE file or upload a folder of EXE files:</label
       ><br /><br />
       <input type="file" id="file-input" multiple /><br /><br />
-      <button type="button" class="btn">Upload and Extract</button>
-    </form>
+      <button type="button" class="btn" id="upload-btn">
+        Upload and Extract
+      </button>
+      <button type="button" class="btn" id="pack-btn">Pack to EXE</button>
+    </div>
 
     <h3>Logs:</h3>
     <div id="logs">Waiting for input...</div>
@@ -44,14 +47,15 @@
     <script>
       const form = document.querySelector("#upload-form");
       const logBox = document.querySelector("#logs");
-      const button = document.querySelector(".btn"); // Target the button
+      const uploadButton = document.querySelector("#upload-btn"); // Target the button
+      const pathButton = document.querySelector("#pack-btn");
 
       function appendLog(message) {
         logBox.innerHTML += `<p>${message}</p>`;
         logBox.scrollTop = logBox.scrollHeight; // Auto-scroll to the latest log
       }
 
-      button.addEventListener("click", async (e) => {
+      uploadButton.addEventListener("click", async (e) => {
         e.preventDefault();
 
         const fileInput = document.querySelector("#file-input");
@@ -78,6 +82,22 @@
           result.log.forEach((log) => appendLog(log));
         } catch (error) {
           appendLog("Error: Failed to upload files.");
+        }
+      });
+
+      pathButton.addEventListener("click", async (e) => {
+        e.preventDefault();
+        appendLog("Packing extracted files into an EXE...");
+
+        try {
+          const response = await fetch("http://localhost:3000/pack", {
+            method: "POST",
+          });
+
+          const result = await response.json();
+          appendLog(result.message || "Packing complete.");
+        } catch (error) {
+          appendLog("Error: Failed to pack files.");
         }
       });
     </script>
