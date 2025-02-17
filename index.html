@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EXE Extractor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 0;
+      }
+      #logs {
+        margin-top: 15px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        height: 200px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+      }
+      .btn {
+        padding: 10px 15px;
+        margin-right: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>EXE Extractor Web Interface</h1>
+
+    <form id="upload-form">
+      <label>Select a single EXE file or upload a folder of EXE files:</label
+      ><br /><br />
+      <input type="file" id="file-input" multiple /><br /><br />
+      <button type="button" class="btn">Upload and Extract</button>
+    </form>
+
+    <h3>Logs:</h3>
+    <div id="logs">Waiting for input...</div>
+
+    <script>
+      const form = document.querySelector("#upload-form");
+      const logBox = document.querySelector("#logs");
+      const button = document.querySelector(".btn"); // Target the button
+
+      function appendLog(message) {
+        logBox.innerHTML += `<p>${message}</p>`;
+        logBox.scrollTop = logBox.scrollHeight; // Auto-scroll to the latest log
+      }
+
+      button.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const fileInput = document.querySelector("#file-input");
+        const files = fileInput.files;
+
+        if (!files.length) {
+          appendLog("No files selected.");
+          return;
+        }
+
+        appendLog("Uploading files for extraction...");
+
+        const formData = new FormData();
+        [...files].forEach((file) => formData.append("files", file));
+
+        try {
+          const response = await fetch("http://localhost:3000/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+          appendLog(result.message || "Extraction complete.");
+          result.log.forEach((log) => appendLog(log));
+        } catch (error) {
+          appendLog("Error: Failed to upload files.");
+        }
+      });
+    </script>
+  </body>
+</html>
